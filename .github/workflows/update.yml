@@ -1,0 +1,34 @@
+name: Update Editorial Feeds
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install feedparser
+
+      - name: Update English editorial feed
+        run: python update_english.py
+
+      - name: Update Bangla editorial feed
+        run: python update_bangla.py
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add english_combined.xml bangla_combined.xml english_index.txt bangla_index.txt
+          git commit -m "Update editorial feeds [skip ci]" || echo "No changes to commit"
+          git push
